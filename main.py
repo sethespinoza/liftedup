@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from database import engine
 from models import Base
+from routers import users
 
 # reads models and create tables in db
 Base.metadata.create_all(bind=engine)
@@ -9,6 +10,9 @@ Base.metadata.create_all(bind=engine)
 # app instance
 # all requests from the server are handled through this object
 app = FastAPI()
+
+# register users router w/ a prefix
+app.include_router(users.router, prefix="/users", tags=["users"])
 
 # route
 # maps URL to a function
