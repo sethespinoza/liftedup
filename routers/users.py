@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from database import get_db
 from models import User
@@ -10,7 +11,7 @@ router = APIRouter()
 # signup endpoint
 @router.post("/signup", response_model=UserResponse)
 def signup(user: UserCreate, db: Session = Depends(get_db)):
-    # check if username exists
+    # check if username already exists
     existing = db.query(User).filter(User.username == user.username).first()
     if existing:
         raise HTTPException(status_code=400, detail="Username already taken")
@@ -27,13 +28,14 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 # login endpoint
+# OAuth2PasswordRequestForm reads username and password from form data instead of JSON
 @router.post("/login", response_model=Token)
-def login(user: UserCreate, db: Session = Depends(get_db)):
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     # find user in database
-    db_user = db.query(User).filter(User.username == user.username).first()
+    db_user = db.query(User).filter(User.username == form_data.username).first()
     # if user doesn't exist or password is wrong, return error
-    if not db_user or not verify_password(user.password, db_user.hashed_password):
+    if not db_user or not verify_password(form_data.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    # create & return a token
+    # create and return token
     token = create_access_token(data={"sub": db_user.username})
     return {"access_token": token, "token_type": "bearer"}

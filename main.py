@@ -1,11 +1,10 @@
 from fastapi import FastAPI
 from database import engine
 from models import Base
-from routers import users
+from routers import users, workouts
 
 # reads models and create tables in db
 Base.metadata.create_all(bind=engine)
-
 
 # app instance
 # all requests from the server are handled through this object
@@ -13,6 +12,8 @@ app = FastAPI()
 
 # register users router w/ a prefix
 app.include_router(users.router, prefix="/users", tags=["users"])
+# register workouts router w/ a prefix
+app.include_router(workouts.router, prefix="/workouts", tags=["workouts"])
 
 # route
 # maps URL to a function
