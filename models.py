@@ -15,6 +15,8 @@ class User(Base):
 
     # links user to their workouts (multiple possible for one user)
     workouts = relationship("Workout", back_populates="user")
+    
+    personal_records = relationship("PersonalRecord", back_populates="user")
 
 
 class Workout(Base):
@@ -30,3 +32,15 @@ class Workout(Base):
 
     # each workout knows who it belongs to
     user = relationship("User", back_populates="workouts")
+
+class PersonalRecord(Base):
+    __tablename__ = "personal_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    exercise = Column(String)
+    weight = Column(Float) # best weight logged for this exercise
+    achieved_at = Column(DateTime, default=datetime.utcnow)
+
+    # each PR knows who it belongs to
+    user = relationship("User", back_populates="personal_records")
