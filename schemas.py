@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 # what is expected when someone signs up
 class UserCreate(BaseModel):
@@ -19,4 +20,22 @@ class UserResponse(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
-    
+
+# what is expected when someone logs a workout
+class WorkoutCreate(BaseModel):
+    exercise: str
+    sets: int
+    reps: int
+    weight: float
+
+# what is sent back after logging a workout
+class WorkoutResponse(BaseModel):
+    id: int
+    exercise: str
+    sets: int
+    reps: int
+    weight: float
+    logged_at: datetime
+
+    class Config:
+        from_attributes = True
