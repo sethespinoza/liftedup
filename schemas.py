@@ -39,3 +39,12 @@ class WorkoutResponse(BaseModel):
 
     class Config:
         from_attributes = True
+    
+class PRResponse(BaseModel):
+    id: int
+    exercise: str
+    weight: float
+    achieved_at: datetime
+
+    class Config:
+        from_attributes = True

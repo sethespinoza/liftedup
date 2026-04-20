@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from models import Workout, User
+from models import Workout, User, PersonalRecord
 from schemas import WorkoutCreate, WorkoutResponse
 from auth import verify_token
 from typing import List
@@ -21,6 +21,28 @@ def log_workout(workout: WorkoutCreate, db: Session = Depends(get_db), current_u
     db.add(new_workout)
     db.commit()
     db.refresh(new_workout)
+
+    # check if this is a new PR for this exercise
+    existing_pr = db.query(PersonalRecord).filter(
+        PersonalRecord.user_id == current_user.id,
+        PersonalRecord.exercise == workout.exercise
+    ).first()
+
+    if existing_pr is None:
+        # first time logging this exercise (auto PR)
+        new_pr = PersonalRecord(
+            user_id=current_user.id,
+            exercise=workout.exercise,
+            weight=workout.weight
+        )
+        db.add(new_pr)
+        db.commit()
+    elif workout.weight > existing_pr.weight:
+        # new weight is higher (update PR)
+        existing_pr.weight = workout.weight
+        existing_pr.achieved_at = new_workout.logged_at
+        db.commit()
+    
     return new_workout
 
 # get all workouts for the logged in user
